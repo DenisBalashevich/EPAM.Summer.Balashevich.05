@@ -33,11 +33,11 @@ namespace PolynomTask
         {
             if (obj == null)
                 throw new ArgumentNullException();
-            coefficients = obj.coefficients;
+            obj.coefficients.CopyTo(coefficients, 0);
         }
 
         /// <summary>
-        /// Initialize all information of the Polynom
+        /// Initialize all information of the Polyno
         /// </summary>
         /// <param name="arr">Takes params as parameter</param>
 
@@ -73,6 +73,11 @@ namespace PolynomTask
             return new Polynom(result);
         }
 
+        public static Polynom Sum(Polynom first, Polynom second)
+        {
+            return first + second;
+        }
+
         /// <summary>
         ///  Override operation Sum
         /// </summary>
@@ -84,6 +89,11 @@ namespace PolynomTask
         {
             first.coefficients[0] += second;
             return new Polynom(first.coefficients);
+        }
+
+        public static Polynom Sum(Polynom first, double second)
+        {
+            return first + second;
         }
 
         /// <summary>
@@ -98,6 +108,11 @@ namespace PolynomTask
             return new Polynom(first.coefficients);
         }
 
+        public static Polynom Difference(Polynom first, double second)
+        {
+            return first - second;
+        }
+
         /// <summary>
         ///  Override operation Minus
         /// </summary>
@@ -109,6 +124,11 @@ namespace PolynomTask
         {
             return new Polynom(first + (-second));
         }
+
+        public static Polynom Difference(Polynom first, Polynom second)
+        {
+            return first - second;
+        }
         /// <summary>
         ///  Override operation Minus
         /// </summary>
@@ -118,6 +138,7 @@ namespace PolynomTask
         {
             return new Polynom(first * (-1));
         }
+
 
         /// <summary>
         ///  Override operation Multiply
@@ -132,6 +153,10 @@ namespace PolynomTask
             return new Polynom(result);
         }
 
+        public static Polynom Multiplication(Polynom first, Polynom second)
+        {
+            return first * second;
+        }
         /// <summary>
         ///  Override operation Multiply
         /// </summary>
@@ -151,6 +176,11 @@ namespace PolynomTask
                 }
             }
             return new Polynom(result);
+        }
+
+        public static Polynom Multiplication(Polynom first, double second)
+        {
+            return first * second;
         }
 
         /// <summary>
