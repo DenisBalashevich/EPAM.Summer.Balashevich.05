@@ -47,7 +47,7 @@ namespace PolynomTask.Tests
         public string Op_MinPolynom_Tests(Polynom a)
         {
             Polynom p1 = new Polynom();
-            p1 = -a ;
+            p1 = -a;
             return p1.ToString();
         }
 
@@ -59,11 +59,11 @@ namespace PolynomTask.Tests
             return p1.ToString();
         }
 
-        [TestCaseSource("EqualsData")]
-        public bool Equals_Tests(Polynom a, Polynom b)
-        {
-            return a==b;
-        }
+        //[TestCaseSource("EqualsData")]
+        //public bool Equals_Tests(Polynom a, Polynom b)
+        //{
+        //    return a==b;
+        //}
 
         public IEnumerable<TestCaseData> EqualsData()
         {

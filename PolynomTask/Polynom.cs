@@ -12,15 +12,25 @@ namespace PolynomTask
     /// </summary>
     public class Polynom : ICloneable, IEquatable<Polynom>, IComparable<Polynom>, IFormattable
     {
+        public struct Monom
+        {
+            public int MonomDegree { get; }
+            public double MonomCoefficient { get; }
 
-        private readonly double[] coefficients;
+            public Monom(int degree, double val)
+            {
+                MonomDegree = degree;
+                MonomCoefficient = val;
+            }
+        }
+        private readonly Monom[] coefficients = { };
 
         /// <summary>
         /// return Polynom's degree
         /// </summary>
         public int Degree
         {
-            get { return coefficients.Length ; }
+            get { return coefficients.Length; }
         }
 
         #region Constructors
@@ -33,6 +43,7 @@ namespace PolynomTask
         {
             if (obj == null)
                 throw new ArgumentNullException();
+            coefficients = new Monom[obj.coefficients.Length];
             obj.coefficients.CopyTo(coefficients, 0);
         }
 
@@ -45,8 +56,22 @@ namespace PolynomTask
         {
             if (arr == null)
                 throw new System.Exception("Polynom is empty");
-            coefficients = new double[arr.Length];
-            arr.CopyTo(coefficients, 0);
+
+            coefficients = new Monom[arr.Length];
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i] != 0)
+                    coefficients[i] = new Monom(i, arr[i]);
+            }
+        }
+
+        private Polynom(params Monom[] mon)
+        {
+            if (mon == null)
+                throw new System.Exception("Polynom is empty");
+
+            coefficients = new Monom[mon.Length];
+            mon.CopyTo(coefficients, 0);
         }
         #endregion
 
@@ -64,11 +89,11 @@ namespace PolynomTask
         {
             int resultDegree = first.Degree >= second.Degree ? first.Degree : second.Degree;
             double[] result = new double[resultDegree + 1];
-            first.coefficients.CopyTo(result, 0);
+            first.coefficients.Select(i => i.MonomCoefficient).ToArray().CopyTo(result, 0);
 
             for (int i = 0; i < second.Degree; i++)
             {
-                result[i] += second.coefficients[i];
+                result[i] += second.coefficients[i].MonomCoefficient;
             }
             return new Polynom(result);
         }
@@ -87,8 +112,16 @@ namespace PolynomTask
 
         public static Polynom operator +(Polynom first, double second)
         {
-            first.coefficients[0] += second;
-            return new Polynom(first.coefficients);
+            double[] result = CopyArray(first);
+            result[0] += second;
+            return new Polynom(result);
+        }
+
+        private static double[] CopyArray(Polynom pol)
+        {
+            double[] result = new double[pol.Degree];
+            pol.coefficients.Select(i => i.MonomCoefficient).ToArray().CopyTo(result, 0);
+            return result;
         }
 
         public static Polynom Sum(Polynom first, double second)
@@ -104,8 +137,9 @@ namespace PolynomTask
         /// <returns>Their difference</returns>
         public static Polynom operator -(Polynom first, double second)
         {
-            first.coefficients[0] -= second;
-            return new Polynom(first.coefficients);
+            double[] result = CopyArray(first);
+            result[0] -= second;
+            return new Polynom(result);
         }
 
         public static Polynom Difference(Polynom first, double second)
@@ -134,9 +168,11 @@ namespace PolynomTask
         /// </summary>
         /// <param name="first"></param>
         /// <returns>-Polynom</returns>
-        public static Polynom operator -(Polynom first)
+        public static Polynom operator -(Polynom pol)
         {
-            return new Polynom(first * (-1));
+            double[] result = new double[pol.Degree];
+            pol.coefficients.Select(i => i.MonomCoefficient * (-1)).ToArray().CopyTo(result, 0);
+            return new Polynom(result);
         }
 
 
@@ -149,7 +185,7 @@ namespace PolynomTask
 
         public static Polynom operator *(Polynom firstPolynom, double number)
         {
-            var result = firstPolynom.coefficients.Select(i => number * i).ToArray();
+            var result = firstPolynom.coefficients.Select(i => number * i.MonomCoefficient).ToArray();
             return new Polynom(result);
         }
 
@@ -172,7 +208,7 @@ namespace PolynomTask
             {
                 for (int j = 0; j < second.Degree; j++)
                 {
-                    result[i + j] += first.coefficients[i] * second.coefficients[j];
+                    result[i + j] += first.coefficients[i].MonomCoefficient * second.coefficients[j].MonomCoefficient;
                 }
             }
             return new Polynom(result);
@@ -295,15 +331,15 @@ namespace PolynomTask
             if (Degree == 0)
                 result.Append(0);
 
-            if (coefficients[0] != 0)
-                result.Append(coefficients[0]);
+            if (coefficients[0].MonomCoefficient != 0)
+                result.Append(coefficients[0].MonomCoefficient);
 
             for (int i = 1; i < this.Degree; i++)
             {
-                if (coefficients[i] > 0)
-                    result.AppendFormat("+{0}x^{1}", coefficients[i], i);
-                else if (coefficients[i] < 0)
-                    result.AppendFormat("{0}x^{1}", coefficients[i], i);
+                if (coefficients[i].MonomCoefficient > 0)
+                    result.AppendFormat("+{0}x^{1}", coefficients[i].MonomCoefficient, coefficients[i].MonomDegree);
+                else if (coefficients[i].MonomCoefficient < 0)
+                    result.AppendFormat("{0}x^{1}", coefficients[i].MonomCoefficient, coefficients[i].MonomDegree);
             }
             return string.Format("{0}", result);
         }
@@ -344,9 +380,9 @@ namespace PolynomTask
         public override int GetHashCode()
         {
             int ghc = 0;
-            foreach (var a in coefficients)
+            for (int i = 0; i < coefficients.Length; i++)
             {
-                ghc += (int)a * Degree;
+                ghc += (int)coefficients[i].MonomCoefficient + Degree;
             }
             return ghc;
         }
@@ -368,9 +404,9 @@ namespace PolynomTask
 
             for (int i = 0; i < this.Degree; i++)
             {
-                if (coefficients[i] > second.coefficients[i])
+                if (coefficients[i].MonomCoefficient > second.coefficients[i].MonomCoefficient)
                     return 1;
-                if (coefficients[i] < second.coefficients[i])
+                if (coefficients[i].MonomCoefficient < second.coefficients[i].MonomCoefficient)
                     return -1;
             }
             return 0;
