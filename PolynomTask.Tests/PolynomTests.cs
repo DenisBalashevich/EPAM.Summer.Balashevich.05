@@ -59,18 +59,18 @@ namespace PolynomTask.Tests
             return p1.ToString();
         }
 
-        //[TestCaseSource("EqualsData")]
-        //public bool Equals_Tests(Polynom a, Polynom b)
-        //{
-        //    return a==b;
-        //}
+        [TestCaseSource("EqualsData")]
+        public bool Equals_Tests(Polynom a, Polynom b)
+        {
+            return a == b;
+        }
 
         public IEnumerable<TestCaseData> EqualsData()
         {
             yield return new TestCaseData(new Polynom(1, 1), new Polynom(1, 1)).Returns(true);
             yield return new TestCaseData(new Polynom(-1), new Polynom(1, 2, 3, 4)).Returns(false);
-            yield return new TestCaseData(new Polynom(0, 0, 0, 0, 0, 0), new Polynom(0,0,0,0,0)).Returns(false);
-            yield return new TestCaseData(new Polynom(-5, -6), new Polynom(-5,-6)).Returns(true);
+            yield return new TestCaseData(new Polynom(0, 0, 0, 0, 0, 0), new Polynom(0, 0, 0, 0, 0)).Returns(true);
+            yield return new TestCaseData(new Polynom(-5, -6), new Polynom(-5, -6)).Returns(true);
         }
 
         public IEnumerable<TestCaseData> MultiplayData()
@@ -104,7 +104,7 @@ namespace PolynomTask.Tests
         public IEnumerable<TestCaseData> SubstractionData()
         {
             yield return new TestCaseData(new Polynom(1, 2, 3, 4), new Polynom(1, 2, 3, 4)).Returns(string.Empty);
-            yield return new TestCaseData(new Polynom(1), new Polynom(1, 2, 3, 4)).Returns("-2x^1-3x^2-4x^3");
+            yield return new TestCaseData(new Polynom(1), new Polynom(1, 2, 3, 4)).Returns("-2-3x^2-4x^3");
             yield return new TestCaseData(new Polynom(0, 0, 0, 0, 0, 0), new Polynom(1, 2, 3, 4)).Returns("-1-2x^1-3x^2-4x^3");
             yield return new TestCaseData(new Polynom(0, 0, 0, 0), new Polynom(0, 0)).Returns(string.Empty);
             yield return new TestCaseData(new Polynom(-5, -6), new Polynom(-1, -9, -4)).Returns("-4+3x^1+4x^2");

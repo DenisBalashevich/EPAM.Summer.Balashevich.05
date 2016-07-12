@@ -10,7 +10,7 @@ namespace PolynomTask
     /// <summary>
     ///  Class Polynom for computing, representation and comparing
     /// </summary>
-    public class Polynom : ICloneable, IEquatable<Polynom>, IComparable<Polynom>, IFormattable
+    public sealed class Polynom : ICloneable, IEquatable<Polynom>, IComparable<Polynom>, IFormattable
     {
         public struct Monom
         {
@@ -24,15 +24,12 @@ namespace PolynomTask
             }
         }
         private readonly Monom[] coefficients = { };
-
+        private readonly double epsilon = 0.00000001;
         /// <summary>
         /// return Polynom's degree
         /// </summary>
-        public int Degree
-        {
-            get { return coefficients.Length; }
-        }
 
+        public int Degree { get; private set; }
         #region Constructors
         /// <summary>
         /// Initialize all information of the Polynom
@@ -57,12 +54,20 @@ namespace PolynomTask
             if (arr == null)
                 throw new System.Exception("Polynom is empty");
 
-            coefficients = new Monom[arr.Length];
+            coefficients = new Monom[NumOfUnZero(arr)];
+            int j = 0;
             for (int i = 0; i < arr.Length; i++)
             {
                 if (arr[i] != 0)
-                    coefficients[i] = new Monom(i, arr[i]);
+                {
+                    coefficients[j] = new Monom(i, arr[i]);
+                    j++;
+                }
+                if (Math.Abs(coefficients[i].MonomCoefficient) > 0)
+                    break;
             }
+            if (coefficients.Length != 0)
+                Degree = coefficients[coefficients.Length - 1].MonomDegree + 1;
         }
 
         private Polynom(params Monom[] mon)
@@ -75,6 +80,10 @@ namespace PolynomTask
         }
         #endregion
 
+        public double this[int i]
+        {
+            get { return coefficients[i].MonomCoefficient; }
+        }
 
         #region Operators
 
@@ -88,15 +97,12 @@ namespace PolynomTask
         public static Polynom operator +(Polynom first, Polynom second)
         {
             int resultDegree = first.Degree >= second.Degree ? first.Degree : second.Degree;
-            double[] result = new double[resultDegree + 1];
-            first.coefficients.Select(i => i.MonomCoefficient).ToArray().CopyTo(result, 0);
-
-            for (int i = 0; i < second.Degree; i++)
-            {
-                result[i] += second.coefficients[i].MonomCoefficient;
-            }
-            return new Polynom(result);
+            double[] result = new double[resultDegree];
+            result = SumOfArray(first, result);
+            return new Polynom(SumOfArray(second, result));
         }
+
+
 
         public static Polynom Sum(Polynom first, Polynom second)
         {
@@ -115,13 +121,6 @@ namespace PolynomTask
             double[] result = CopyArray(first);
             result[0] += second;
             return new Polynom(result);
-        }
-
-        private static double[] CopyArray(Polynom pol)
-        {
-            double[] result = new double[pol.Degree];
-            pol.coefficients.Select(i => i.MonomCoefficient).ToArray().CopyTo(result, 0);
-            return result;
         }
 
         public static Polynom Sum(Polynom first, double second)
@@ -175,7 +174,6 @@ namespace PolynomTask
             return new Polynom(result);
         }
 
-
         /// <summary>
         ///  Override operation Multiply
         /// </summary>
@@ -204,9 +202,9 @@ namespace PolynomTask
         {
             int resultDegree = first.Degree + second.Degree + 1;
             double[] result = new double[resultDegree];
-            for (int i = 0; i < first.Degree; i++)
+            for (int i = 0; i < first.coefficients.Length; i++)
             {
-                for (int j = 0; j < second.Degree; j++)
+                for (int j = 0; j < second.coefficients.Length; j++)
                 {
                     result[i + j] += first.coefficients[i].MonomCoefficient * second.coefficients[j].MonomCoefficient;
                 }
@@ -324,17 +322,17 @@ namespace PolynomTask
         }
         #endregion
 
-        #region ToString
+
         public override string ToString()
         {
             StringBuilder result = new StringBuilder();
-            if (Degree == 0)
-                result.Append(0);
+            if (coefficients.Length == 0)
+                return String.Empty;
 
             if (coefficients[0].MonomCoefficient != 0)
                 result.Append(coefficients[0].MonomCoefficient);
 
-            for (int i = 1; i < this.Degree; i++)
+            for (int i = 1; i < this.coefficients.Length; i++)
             {
                 if (coefficients[i].MonomCoefficient > 0)
                     result.AppendFormat("+{0}x^{1}", coefficients[i].MonomCoefficient, coefficients[i].MonomDegree);
@@ -371,7 +369,6 @@ namespace PolynomTask
                     throw new FormatException(String.Format("The {0} format string is not supported.", format));
             }
         }
-        #endregion
 
         /// <summary>
         /// Override GetHashCode
@@ -410,8 +407,38 @@ namespace PolynomTask
                     return -1;
             }
             return 0;
+        }
 
+        private static int NumOfUnZero(double[] arr)
+        {
+            int n = 0;
+            foreach (var a in arr)
+            {
+                if (a != 0)
+                    n++;
+            }
+            return n;
+        }
 
+        private static double[] SumOfArray(Polynom pol, double[] result)
+        {
+            int j = 0;
+            for (int i = 0; i < pol.Degree; i++)
+            {
+                if (i == pol.coefficients[j].MonomDegree)
+                {
+                    result[i] += pol.coefficients[j].MonomCoefficient;
+                    j++;
+                }
+            }
+            return result;
+        }
+
+        private static double[] CopyArray(Polynom pol)
+        {
+            double[] result = new double[pol.Degree];
+            pol.coefficients.Select(i => i.MonomCoefficient).ToArray().CopyTo(result, 0);
+            return result;
         }
     }
 }
